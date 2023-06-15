@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <uses-feature android:name="android.hardware.camera" />
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -17,12 +19,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Siboeah"
         tools:targetApi="31">
+
         <activity
             android:name=".PemindaiBuahActivity"
             android:exported="false"
             android:label="@string/title_activity_pemindai_buah"
             android:theme="@style/Theme.AppCompat" />
-
         <activity
             android:name=".PencarianResepActivity"
             android:exported="false"

@@ -5,4 +5,7 @@
     <string name="title_activity_pemindai_buah">PemindaiBuahActivity</string>
     <string name="title_activity_pencarian_resep">PencarianResepActivity</string>
     <string name="title_activity_camera_xpemindai_buah">CameraX_PemindaiBuah</string>
+    <string name="title_activity_hasil_prediksi">HasilPrediksiActivity</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -9,7 +9,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.capstonebangkit.siboeah.ui.theme.SiboeahTheme
 
 class PencarianResepActivity : ComponentActivity() {
@@ -32,12 +31,32 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
         text = "Pencarian $name!",
         modifier = modifier
     )
-}
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview2() {
-    SiboeahTheme {
-        Greeting2("Android")
-    }
+//    val retrofit: Retrofit = Retrofit.Builder()
+//        .baseUrl("https://aplikasi-fahmi-chat-default-rtdb.firebaseio.com/")
+//        .client(OkHttpClient())
+//        .addConverterFactory(GsonConverterFactory.create())
+//        .build()
+//
+//    val firebaseService: ApiService = retrofit.create(ApiService::class.java)
+//
+//    val chat = Chat("Rujak Ayam")
+//    val call: Call<Void> = firebaseService.postChat(chat)
+//    call.enqueue(object : RetrofitCallback<Void> {
+//        override fun onFailure(call: Call<Void>, t: Throwable) {
+//            // Handle failure
+//            t.printStackTrace()
+//        }
+//
+//        override fun onResponse(call: Call<Void>, response: retrofit2.Response<Void>) {
+//            // Handle response
+//            if (response.isSuccessful) {
+//                // Successful POST to Firebase endpoint
+//                // Perform necessary actions
+//            } else {
+//                // Failed POST to Firebase endpoint
+//                // Handle error or unsuccessful response
+//            }
+//        }
+//    })
 }
