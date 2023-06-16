@@ -12,14 +12,14 @@ class HasilFragment : Fragment() {
 
     // Add private properties to store the values
     private var namaBuah: String? = null
-    private var tingkatKesegaran: String? = null
+//    private var tingkatKesegaran: String? = null
 
     companion object {
-        fun newInstance(namaBuah: String, tingkatKesegaran: String): HasilFragment {
+        fun newInstance(namaBuah: String, ): HasilFragment {
             val fragment = HasilFragment()
             val args = Bundle()
             args.putString("nama_buah", namaBuah)
-            args.putString("tingkat_kesegaran", tingkatKesegaran)
+//            args.putString("tingkat_kesegaran", tingkatKesegaran)
             fragment.arguments = args
             return fragment
         }
@@ -30,7 +30,7 @@ class HasilFragment : Fragment() {
         // Retrieve the values from arguments
         arguments?.let {
             namaBuah = it.getString("nama_buah")
-            tingkatKesegaran = it.getString("tingkat_kesegaran")
+//            tingkatKesegaran = it.getString("tingkat_kesegaran")
         }
     }
 
@@ -40,7 +40,7 @@ class HasilFragment : Fragment() {
 
         // Update the views with the retrieved values
         view.findViewById<TextView>(R.id.namaBuahTextView).text = namaBuah
-        view.findViewById<TextView>(R.id.tingkatKesegaranTextView).text = tingkatKesegaran
+//        view.findViewById<TextView>(R.id.tingkatKesegaranTextView).text = tingkatKesegaran
 
         return view
     }

@@ -36,8 +36,8 @@
         android:textStyle="bold"
         />
     <ImageView
-        android:layout_width="300sp"
-        android:layout_height="300sp"
+        android:layout_width="150sp"
+        android:layout_height="150sp"
         android:layout_centerHorizontal="true"
         android:id="@+id/imageView"
         android:layout_marginTop="0sp"
@@ -64,6 +64,30 @@
         android:id="@+id/result"
         android:layout_below="@+id/classified"
         />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/confidencesText"
+        android:text="Confidences:"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/result"
+        android:layout_marginTop="30sp"
+        />
+
+    <TextView
+        android:id="@+id/confidence"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button"
+        android:layout_below="@+id/confidencesText"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="1dp"
+        android:text=""
+        android:textColor="#C30000"
+        android:textSize="22sp" />
 
 
 </RelativeLayout>

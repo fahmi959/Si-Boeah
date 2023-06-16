@@ -3,6 +3,7 @@ package com.capstonebangkit.siboeah
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
@@ -15,6 +16,12 @@ interface ApiService {
     @Multipart
     @POST("Upload")
     fun postImage(@Part image: MultipartBody.Part): Call<Void>
+
+
+    @GET("articles") // Ganti URL sesuai dengan endpoint API yang sesuai
+    suspend fun getTips(): List<TipData>
+
+
 }
 
 

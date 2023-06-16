@@ -1,7 +1,7 @@
 package com.capstonebangkit.siboeah
 
-import HasilFragment
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -18,7 +18,7 @@ import androidx.annotation.Nullable
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
+import com.capstonebangkit.siboeah.ml.Model
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.ktx.Firebase
@@ -26,6 +26,9 @@ import com.google.firebase.storage.ktx.storage
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import org.tensorflow.lite.DataType
+import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -35,15 +38,16 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.nio.ByteBuffer
 
 class PemindaiBuahActivity : AppCompatActivity() {
-
 
     private lateinit var camera: Button
     private lateinit var gallery: Button
     private lateinit var imageView: ImageView
     private lateinit var result: TextView
-    private val imageSize = 32
+    private lateinit var confidence: TextView
+    private val imageSize = 224
 
     private val BASE_URL = "https://capstone-389205-default-rtdb.asia-southeast1.firebasedatabase.app/"
 
@@ -56,8 +60,8 @@ class PemindaiBuahActivity : AppCompatActivity() {
 
         camera = findViewById(R.id.button)
         gallery = findViewById(R.id.button2)
-
         result = findViewById(R.id.result)
+        confidence = findViewById(R.id.confidence)
         imageView = findViewById(R.id.imageView)
 
         camera.setOnClickListener {
@@ -68,6 +72,7 @@ class PemindaiBuahActivity : AppCompatActivity() {
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 100)
             }
         }
+
         gallery.setOnClickListener {
             val cameraIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             startActivityForResult(cameraIntent, 1)
@@ -82,8 +87,49 @@ class PemindaiBuahActivity : AppCompatActivity() {
         FirebaseApp.initializeApp(this) // Initialize Firebase
     }
 
+    private fun classifyImage(image: Bitmap, context: Context) {
+        try {
+            val model = Model.newInstance(context)
+
+            val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 224, 224, 3), DataType.FLOAT32)
+            val tensorImage = TensorImage(DataType.FLOAT32)
+            tensorImage.load(image)
+            val byteBuffer: ByteBuffer = tensorImage.buffer
+
+            inputFeature0.loadBuffer(byteBuffer)
+
+            val outputs = model.process(inputFeature0)
+            val outputFeature0 = outputs.outputFeature0AsTensorBuffer
+
+            val confidences = outputFeature0.floatArray
+            var maxPos = 0
+            var maxConfidence = 0f
+            for (i in confidences.indices) {
+                if (confidences[i] > maxConfidence) {
+                    maxConfidence = confidences[i]
+                    maxPos = i
+                }
+            }
+            val classes = arrayOf("freshapple", "freshbanana", "freshorange", "rottenapple", "rottenbanana", "rottenorange")
+            result.text = classes[maxPos]
+
+            var s = ""
+            for (i in classes.indices) {
+                s += String.format("%s: %.1f%%\n", classes[i], confidences[i] * 100)
+            }
+confidence.text = s
 
 
+
+
+            model.close()
+
+
+
+        } catch (e: IOException) {
+            // TODO Handle the exception
+        }
+    }
 
     private fun kirimImageToAPI(image: Bitmap) {
         val base64Image = bitmapToBase64(image)
@@ -94,14 +140,8 @@ class PemindaiBuahActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     // Handle successful response
                     Toast.makeText(applicationContext, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
-
                     uploadToFirebaseStorage(image)
 
-                    // fungsi pemanggilan post image
-                    postImageToAPI(image)
-
-
-                    Toast.makeText(applicationContext, "Post Image Sukses", Toast.LENGTH_SHORT).show()
 
                 } else {
                     // Handle error or unsuccessful response
@@ -116,33 +156,35 @@ class PemindaiBuahActivity : AppCompatActivity() {
         })
     }
 
-
-    private fun processImage(image: Bitmap) {
-        val dimension = Math.min(image.width, image.height)
-        val thumbnail = ThumbnailUtils.extractThumbnail(image, dimension, dimension)
-        imageView.setImageBitmap(thumbnail)
-
-        val scaledImage = Bitmap.createScaledBitmap(thumbnail, imageSize, imageSize, false)
-
-        postImageToAPI(scaledImage)
-        kirimImageToAPI(scaledImage)
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, @Nullable data: Intent?) {
         if (resultCode == RESULT_OK) {
             if (requestCode == 3) {
                 val image = data?.extras?.get("data") as Bitmap
-                processImage(image)
-            } else if (requestCode == 1) {
+                val dimension = Math.min(image.width, image.height)
+                val thumbnail = ThumbnailUtils.extractThumbnail(image, dimension, dimension)
+                imageView.setImageBitmap(thumbnail)
+
+                val scaledImage = Bitmap.createScaledBitmap(thumbnail, imageSize, imageSize, false)
+                classifyImage(scaledImage, applicationContext)
+                kirimImageToAPI(scaledImage)
+                postImageToAPI(scaledImage)
+
+            } else {
                 val dat: Uri? = data?.data
                 var image: Bitmap? = null
                 try {
                     image = MediaStore.Images.Media.getBitmap(this.contentResolver, dat)
-                    if (image != null) {
-                        processImage(image)
-                    }
                 } catch (e: IOException) {
                     e.printStackTrace()
+                }
+                imageView.setImageBitmap(image)
+
+                val scaledImage = image?.let { Bitmap.createScaledBitmap(it, imageSize, imageSize, false) }
+                if (scaledImage != null) {
+                    classifyImage(scaledImage, applicationContext)
+                    kirimImageToAPI(scaledImage)
+                    postImageToAPI(scaledImage)
+
                 }
             }
         }
@@ -182,8 +224,7 @@ class PemindaiBuahActivity : AppCompatActivity() {
                 imageRef.downloadUrl.addOnSuccessListener { uri ->
                     val imageUrl = uri.toString()
                     // Use the URL of the image (e.g., display it in an ImageView)
-//                    imageView.setImageURI(uri)
-
+// imageView.setImageURI(uri)
                     // Save the image URL to Realtime Database
                     val database = FirebaseDatabase.getInstance()
                     val databaseRef = database.reference
@@ -200,10 +241,10 @@ class PemindaiBuahActivity : AppCompatActivity() {
         }
     }
 
-
-
-
     private fun postImageToAPI(image: Bitmap) {
+
+
+
         val retrofit = Retrofit.Builder()
             .baseUrl("https://cc-bix2qs6woa-de.a.run.app/")
             .addConverterFactory(GsonConverterFactory.create())
@@ -221,18 +262,6 @@ class PemindaiBuahActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     // Handle successful response
                     Toast.makeText(applicationContext, "Gambar Berhasil Di Kirim", Toast.LENGTH_SHORT).show()
-
-camera.isVisible = false
-                    gallery.isVisible = false
-                    val namaBuah = "Apel"
-                    val tingkatKesegaran = "Masih Segar"
-                    val energi = "Energi" // Replace with the actual value of energi
-                    val kandungan = "Kandungan" // Replace with the actual value of kandungan
-
-                    val fragment = HasilFragment.newInstance(namaBuah, tingkatKesegaran)
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.hasilFragmentContainer, fragment)
-                        .commit()
 
 
                 } else {
@@ -264,7 +293,8 @@ camera.isVisible = false
     }
 
 
-}
+
+                }
 
 
 
